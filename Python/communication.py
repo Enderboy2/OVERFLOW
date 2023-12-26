@@ -3,10 +3,9 @@ import serial
 import time
 
 class Communication:
-    def __init__(self):
+    def __init__(self, p):
         # Initialize communication components
-        self.port = self.read_port_from_file("data.txt", 0)
-
+        self.port = p
         # Initialize communication components only if the port is not empty
         if self.port:
             self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)

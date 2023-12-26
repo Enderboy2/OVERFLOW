@@ -10,7 +10,7 @@ class GUI:
         self.root.title("ROV Controller")
         self.root.geometry("400x400")
         self.root.minsize(300, 200)  # Set a minimum size
-
+        self.root.after(1000, self.update_gui_from_file)
         # Styles
         bg_color = "#35424a"
         label_color = "#FFFFFF"
@@ -123,7 +123,47 @@ class GUI:
         self.root.rowconfigure(2, weight=1)
         self.root.rowconfigure(3, weight=1)
         self.root.rowconfigure(4, weight=1)
-        self.root.row
+        self.root.mainloop()
+
+    def update_gui_from_file(self):
+        # Read data from the text file and update the GUI components accordingly
+        try:
+            with open("data.txt", "r") as file:
+                # Read all lines into a list
+                data_lines = file.readlines()
+
+                # Example: Update motion label
+                motion_data = data_lines[0].strip()
+                self.motion_label.config(text=f"Motion: {motion_data}")
+
+                # Example: Update speed label and progress bar
+                speed_data = data_lines[1].strip()
+                self.speed_label.config(text=f"Speed: {speed_data}")
+                self.speed_progress["value"] = int(speed_data)
+
+                # Example: Update grippers label and indicator
+                grippers_data = data_lines[2].strip()
+                self.grippers_label.config(text=f"Grippers: {grippers_data}")
+                if grippers_data == "1":
+                    self.grippers_indicator.config(text="Open", fg="#5C8374")
+                else:
+                    self.grippers_indicator.config(text="Closed", fg="#A63232")
+
+                # Example: Update gripper index label
+                gripper_index_data = data_lines[3].strip()
+                self.gripper_index_label.config(text=f"Gripper Index: {gripper_index_data}")
+
+                # Example: Update IMU label
+                imu_data = data_lines[4].strip()
+                self.imu_label.config(text=f"IMU Data: {imu_data}")
+
+        except Exception as e:
+            # Handle file read error
+            print(f"Error reading data file: {e}")
+
+        # Schedule the update function to be called again after 1000 milliseconds
+        self.root.after(1000, self.update_gui_from_file)
+
 
 if __name__ == "__main__":
     gui = GUI()
