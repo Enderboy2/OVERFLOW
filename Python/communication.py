@@ -3,18 +3,20 @@ import serial
 import time
 
 class Communication:
-    def __init__(self, p):
+    def __init__(self):
         # Initialize communication components
-        self.port = p
+        self.port = "/dev/ttyUSB0"
         # Initialize communication components only if the port is not empty
         if self.port:
             self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)
+            pass
         else:
             print("Port is empty. Communication components not initialized.")
 
     def send_command(self, command):
         # Send to STATION
         self.arduino.write(bytes(command, 'utf-8'))
+        print("sent -> ",command)
         time.sleep(0.05)
 
 

@@ -5,12 +5,10 @@ from joystick_controller import JoystickController
 import pygame
 import sys
 
-
-
 class ROVController:
     def __init__(self):
         self.joystick_controller = JoystickController()
-        #self.communication = Communication(sys.argv[1])
+        self.communication = Communication()
         self.stop_threads = False
         self.combined_data = [0, 0, 0, 0]
         self.prev_combined_data = [0, 0, 0, 0]
@@ -61,8 +59,8 @@ class ROVController:
         with open("data.txt", "w") as file:
             for data in self.combined_data:
                 file.write(f"{data}\n")
-        print(" -> ", self.combined_data)
         #self.communication.send_command(",".join(map(str, self.combined_data)))
+        print(",".join(map(str, self.combined_data)))
 
     def imu_data_thread(self):
         while not self.stop_threads:

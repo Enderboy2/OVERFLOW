@@ -37,7 +37,7 @@ class GUI:
         # Stop Button
         self.stop_button = tk.Button(self.root, text="Stop", command=self.stop_rov, font=font_style, fg=label_color, bg="#A63232", state=tk.DISABLED)
         self.stop_button.grid(row=2, column=1, pady=5, padx=10, sticky="w")
-
+        4
         # Restart Button
         self.restart_button = tk.Button(self.root, text="Restart", command=self.restart_rov, font=font_style, fg=label_color, bg="#FFA500", state=tk.DISABLED)
         self.restart_button.grid(row=2, column=2, pady=5, padx=10, sticky="w")
