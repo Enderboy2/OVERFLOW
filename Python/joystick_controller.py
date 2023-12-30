@@ -21,7 +21,7 @@ class JoystickController:
         self.prev_spd_motion = "[0, 0, 0, 0, 0, 0]"
         self.buttons = [0] * self.joystick.get_numbuttons()
 
-    def is_joystick_at_rest(self, axis_values, rest_threshold=0.1):
+    def is_joystick_at_rest(self, axis_values, rest_threshold=0.3):
         flag = True
         for val in axis_values:
             if abs(val) > rest_threshold:
@@ -30,21 +30,24 @@ class JoystickController:
 
     def calculate_speed(self, axis_values):
         # Exclude the unwanted axis (axis_values[3])
-        valid_axes = axis_values[:3]
+        if not self.is_joystick_at_rest(axis_values):
+            valid_axes = axis_values[:3]
 
-        # Find the axis with the greatest absolute value
-        max_axis = max(valid_axes, key=abs)
+            # Find the axis with the greatest absolute value
+            max_axis = max(valid_axes, key=abs)
 
-        full_speed = (
-            (axis_values[3] * -1) + 1
-        ) * 200  # Reverse -> Positive -> Perceentage
+            full_speed = (
+                (axis_values[3] * -1) + 1
+            ) * 200  # Reverse -> Positive -> Perceentage
 
-        # Calculate the speed based on the max axis value
-        if self.prev_motion[3] == "U" or self.prev_motion[3] == "D":
-            return int(full_speed)
-        return int(abs(max_axis) * full_speed)
+            # Calculate the speed based on the max axis value
+            if self.prev_motion[3] == "U" or self.prev_motion[3] == "D":
+                return int(full_speed)
+            return int(abs(max_axis) * full_speed)
+        else:
+            return 0
 
-    def detect_motion(self, axis_values, hat_values, threshold=0.1, rest_threshold=0.2):
+    def detect_motion(self, axis_values, hat_values, threshold=0.3, rest_threshold=0.3):
         if self.is_joystick_at_rest(axis_values, rest_threshold):
             return "00000", 0, "[0, 0, 0, 0, 0, 0]"  # Return rest motion and speed 0
             print("detect motion None")

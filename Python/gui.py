@@ -137,7 +137,7 @@ class GUI:
         self.root.rowconfigure(4, weight=1)
         self.root.mainloop()
         while(self.stop != True):
-            self.update_gui_from_file()
+            self.root.after(1000,self.update_gui_from_file())
             time.sleep(0.1)
 
     def update_gui_from_file(self):
@@ -146,6 +146,7 @@ class GUI:
             with open("data.txt", "r") as file:
                 # Read all lines into a list
                 data_lines = file.readlines()
+                print(data_lines)
 
                 # Example: Update motion label
                 motion_data = data_lines[0].strip()

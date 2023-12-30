@@ -10,7 +10,7 @@ class ROVController:
         self.joystick_controller = JoystickController()
         self.communication = Communication()
         self.stop_threads = False
-        self.combined_data = "000000", 0,[0, 0, 0, 0, 0, 0],[0,0,0,0]
+        self.combined_data = ["000000", 0,[0, 0, 0, 0, 0, 0],[0,0,0,0]]
         self.prev_combined_data = [0, 0, 0, 0]
         self.imu_data = ""
 
@@ -36,9 +36,9 @@ class ROVController:
                             self.prev_combined_data = self.combined_data[:]
                             self.write_and_print()
                     elif self.prev_combined_data[0] != "00000":
-                        self.combined_data[0] = motion[0]
-                        self.combined_data[1] = motion[1]
-                        self.combined_data[2] = motion[2]
+                        self.combined_data[0] = "00000"
+                        self.combined_data[1] = 0
+                        self.combined_data[2] = [0,0,0,0,0,0]
                         self.prev_combined_data = self.combined_data[:]
                         self.write_and_print()
                 elif event.type == pygame.JOYBUTTONDOWN:
@@ -60,8 +60,8 @@ class ROVController:
         with open("data.txt", "w") as file:
             for data in self.combined_data:
                 file.write(f"{data}\n")
-        #strg = str("*"+str(self.combined_data[2]) + ',' + str(self.combined_data[3])+"/")
-        strg = "*" + ','.join(map(str, self.combined_data[2])) + ',' + ','.join(map(str, self.combined_data[3])) + "/"
+        strg = str("*"+str(self.combined_data[2][0])+ ","+str(self.combined_data[2][1])+ ","+str(self.combined_data[2][2])+ ","+str(self.combined_data[2][3])+ ","+str(self.combined_data[2][4])+ ","+str(self.combined_data[2][5]) + "," + str(self.combined_data[3][0])+","+ str(self.combined_data[3][1])+","+ str(self.combined_data[3][2])+","+ str(self.combined_data[3][3])+"/")
+        #strg = "*" + ','.join(map(str, self.combined_data[2])) + ',' + ','.join(map(str, self.combined_data[3])) + "/"
         self.communication.send_command(strg)
         #print(str)
 
