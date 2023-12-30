@@ -3,21 +3,24 @@ from tkinter import ttk
 from tkinter import messagebox
 import subprocess
 import serial.tools.list_ports
+import time
+import os
 
 class GUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("ROV Controller")
         self.root.geometry("400x400")
-        self.root.minsize(300, 200)  # Set a minimum size
-        self.root.after(1000, self.update_gui_from_file)
+        self.root.minsize(500, 400)  # Set a minimum size
+        self.stop = True
+        self.c = 0
         # Styles
         bg_color = "#35424a"
         label_color = "#FFFFFF"
         font_style = ("Helvetica", 14)
 
         # Header Label
-        header_label = tk.Label(self.root, text="ROV Controller", font=("Helvetica", 20, "bold"), fg=label_color, bg=bg_color)
+        header_label = tk.Label(self.root, text="OVERFLOW", font=("Helvetica", 20, "bold"), fg=label_color, bg=bg_color)
         header_label.grid(row=0, column=0, columnspan=2, pady=10, sticky="ew")
 
         # Port Label
@@ -82,11 +85,16 @@ class GUI:
             return
 
         # Start the ROV with the selected port
+        with open("data.txt", "w") as file:
+                file.write(f"{selected_port}\n")
         try:
+            
             subprocess.Popen(["python", "main.py", selected_port])
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
             self.restart_button.config(state=tk.NORMAL)
+            self.stop = False
+            self.run()
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start ROV: {e}")
 
@@ -105,6 +113,10 @@ class GUI:
         self.grippers_indicator.config(text="", bg="#35424a", fg="#5C8374")
         self.gripper_index_label.config(text="", bg="#35424a", fg="#FFFFFF")
         self.imu_label.config(text="IMU Data:", bg="#35424a", fg="#FFFFFF")
+        self.stop = True
+        self.c += 1
+        os.system('cls' if os.name == 'nt' else 'clear') # clear the terminal
+        print("Just stopped/restarted for the", self.c ,"th time ;)")
 
     def restart_rov(self):
         # Restart the ROV
@@ -124,6 +136,9 @@ class GUI:
         self.root.rowconfigure(3, weight=1)
         self.root.rowconfigure(4, weight=1)
         self.root.mainloop()
+        while(self.stop != True):
+            self.update_gui_from_file()
+            time.sleep(0.1)
 
     def update_gui_from_file(self):
         # Read data from the text file and update the GUI components accordingly
@@ -153,16 +168,9 @@ class GUI:
                 gripper_index_data = data_lines[3].strip()
                 self.gripper_index_label.config(text=f"Gripper Index: {gripper_index_data}")
 
-                # Example: Update IMU label
-                imu_data = data_lines[4].strip()
-                self.imu_label.config(text=f"IMU Data: {imu_data}")
-
         except Exception as e:
             # Handle file read error
             print(f"Error reading data file: {e}")
-
-        # Schedule the update function to be called again after 1000 milliseconds
-        self.root.after(1000, self.update_gui_from_file)
 
 
 if __name__ == "__main__":

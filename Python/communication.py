@@ -5,7 +5,7 @@ import time
 class Communication:
     def __init__(self):
         # Initialize communication components
-        self.port = "/dev/ttyUSB0"
+        self.port = self.read()[0].strip()
         # Initialize communication components only if the port is not empty
         if self.port:
             self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)
@@ -28,7 +28,7 @@ class Communication:
     def write(self,combined_data):
         with open("data.txt", "w") as file:
             for data in combined_data:
-                file.write(f"{data}\n")
+                file.write(f"{data}")
 
     def read(self):
         with open('data.txt') as f:

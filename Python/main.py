@@ -10,12 +10,13 @@ class ROVController:
         self.joystick_controller = JoystickController()
         self.communication = Communication()
         self.stop_threads = False
-        self.combined_data = [0, 0, 0, 0]
+        self.combined_data = "000000", 0,[0, 0, 0, 0, 0, 0],[0,0,0,0]
         self.prev_combined_data = [0, 0, 0, 0]
         self.imu_data = ""
 
     # Inside the motion_detection_thread in main.py
     def motion_detection_thread(self):
+        self.write_and_print()
         while not self.stop_threads:
             for event in pygame.event.get():
                 if event.type == (pygame.JOYAXISMOTION or pygame.JOYHATMOTION):
@@ -59,8 +60,10 @@ class ROVController:
         with open("data.txt", "w") as file:
             for data in self.combined_data:
                 file.write(f"{data}\n")
-        #self.communication.send_command(",".join(map(str, self.combined_data)))
-        print(",".join(map(str, self.combined_data)))
+        #strg = str("*"+str(self.combined_data[2]) + ',' + str(self.combined_data[3])+"/")
+        strg = "*" + ','.join(map(str, self.combined_data[2])) + ',' + ','.join(map(str, self.combined_data[3])) + "/"
+        self.communication.send_command(strg)
+        #print(str)
 
     def imu_data_thread(self):
         while not self.stop_threads:
