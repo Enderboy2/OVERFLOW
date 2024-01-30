@@ -8,16 +8,22 @@ class Communication:
         self.port = self.read()[0].strip()
         # Initialize communication components only if the port is not empty
         if self.port:
-            self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)
-            pass
+
+            try:
+                self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)
+            except:
+                print("An exception occurred")
         else:
             print("Port is empty. Communication components not initialized.")
 
     def send_command(self, command):
         # Send to STATION
-        self.arduino.write(bytes(command, 'utf-8'))
-        print("sent -> ",command)
-        time.sleep(0.05)
+        try:
+            self.arduino.write(bytes(command, 'utf-8'))
+            print("sent -> ",command)
+            time.sleep(0.05)
+        except:
+            pass
 
 
     def receive_data(self):

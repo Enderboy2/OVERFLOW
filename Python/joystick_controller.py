@@ -18,7 +18,7 @@ class JoystickController:
 
         self.prev_motion = "00000"
         self.prev_speed = 0
-        self.prev_spd_motion = "[0, 0, 0, 0, 0, 0]"
+        self.prev_spd_motion = [0, 0, 0, 0, 0, 0]
         self.buttons = [0] * self.joystick.get_numbuttons()
 
     def is_joystick_at_rest(self, axis_values, rest_threshold=0.3):
@@ -39,18 +39,19 @@ class JoystickController:
             full_speed = (
                 (axis_values[3] * -1) + 1
             ) * 200  # Reverse -> Positive -> Perceentage
-
+            speed = int(abs(max_axis) * full_speed)
+            graduated_speed = speed // 10 * 10
             # Calculate the speed based on the max axis value
             if self.prev_motion[3] == "U" or self.prev_motion[3] == "D":
-                return int(full_speed)
-            return int(abs(max_axis) * full_speed)
+                return int(full_speed) // 10 * 10
+            return graduated_speed
         else:
             return 0
 
     def detect_motion(self, axis_values, hat_values, threshold=0.3, rest_threshold=0.3):
         if self.is_joystick_at_rest(axis_values, rest_threshold):
-            return "00000", 0, "[0, 0, 0, 0, 0, 0]"  # Return rest motion and speed 0
-            print("detect motion None")
+            return "00000", 0, [0, 0, 0, 0, 0, 0]  # Return rest motion and speed 0
+            
 
         left_right = axis_values[0]
         forward_backward = axis_values[1]
@@ -130,10 +131,10 @@ class JoystickController:
             self.prev_motion, self.prev_speed, self.prev_spd_motion = motion_result
             if self.prev_motion == "00000":
                 self.prev_speed = 0
-                self.prev_spd_motion = "[0, 0, 0, 0, 0, 0]"
+                self.prev_spd_motion = [0, 0, 0, 0, 0, 0]
             return self.prev_motion, self.prev_speed, self.prev_spd_motion
         else:
-            return "00000", 0, "[0, 0, 0, 0, 0, 0]"
+            return "00000", 0, [0, 0, 0, 0, 0, 0]
 
     def get_buttons(self, button_states):
         for i in range(len(button_states)):

@@ -4,6 +4,7 @@ from communication import Communication
 from joystick_controller import JoystickController
 import pygame
 import sys
+import json
 
 class ROVController:
     def __init__(self):
@@ -11,13 +12,16 @@ class ROVController:
         self.communication = Communication()
         self.stop_threads = False
         self.combined_data = ["000000", 0,[0, 0, 0, 0, 0, 0],[0,0,0,0]]
-        self.prev_combined_data = [0, 0, 0, 0]
         self.imu_data = ""
+        self.strg = ""
+        self.prev_strg = ""
 
     # Inside the motion_detection_thread in main.py
     def motion_detection_thread(self):
         self.write_and_print()
         while not self.stop_threads:
+            if not pygame.joystick.get_count():
+                self.communication.send_command("*0,0,0,0,0,0,0,0,0,0/")
             for event in pygame.event.get():
                 if event.type == (pygame.JOYAXISMOTION or pygame.JOYHATMOTION):
                     axis_values = [
@@ -25,22 +29,11 @@ class ROVController:
                         for i in range(self.joystick_controller.joystick.get_numaxes())
                     ]
                     hat_values = self.joystick_controller.joystick.get_hat(0)
-                    motion = self.joystick_controller.detect_changed_motion(
+                    self.combined_data[:3] = self.joystick_controller.detect_changed_motion(
                         axis_values, hat_values
                     )
-                    if motion[0] != "00000":
-                        self.combined_data[0] = motion[0]
-                        self.combined_data[1] = motion[1]
-                        self.combined_data[2] = motion[2]
-                        if self.combined_data != self.prev_combined_data:
-                            self.prev_combined_data = self.combined_data[:]
-                            self.write_and_print()
-                    elif self.prev_combined_data[0] != "00000":
-                        self.combined_data[0] = "00000"
-                        self.combined_data[1] = 0
-                        self.combined_data[2] = [0,0,0,0,0,0]
-                        self.prev_combined_data = self.combined_data[:]
-                        self.write_and_print()
+                    
+                    
                 elif event.type == pygame.JOYBUTTONDOWN:
                     button_states = [
                         self.joystick_controller.joystick.get_button(i)
@@ -51,19 +44,20 @@ class ROVController:
                     self.combined_data[3] = self.joystick_controller.get_buttons(
                         button_states
                     )
-                    self.prev_combined_data = self.combined_data[:]
+
+                self.prev_strg = self.strg
+                self.strg = str("*"+str(self.combined_data[2][0])+ ","+str(self.combined_data[2][1])+ ","+str(self.combined_data[2][2])+ ","+str(self.combined_data[2][3])+ ","+str(self.combined_data[2][4])+ ","+str(self.combined_data[2][5]) + "," + str(self.combined_data[3][0])+","+ str(self.combined_data[3][1])+","+ str(self.combined_data[3][2])+","+ str(self.combined_data[3][3])+"/")
+                #print(str(self.combined_data[2][0]))
+                if(self.strg != self.prev_strg):
                     self.write_and_print()
             time.sleep(0.1)
 
     def write_and_print(self):
         # Write combined data to a text file
-        with open("data.txt", "w") as file:
-            for data in self.combined_data:
-                file.write(f"{data}\n")
-        strg = str("*"+str(self.combined_data[2][0])+ ","+str(self.combined_data[2][1])+ ","+str(self.combined_data[2][2])+ ","+str(self.combined_data[2][3])+ ","+str(self.combined_data[2][4])+ ","+str(self.combined_data[2][5]) + "," + str(self.combined_data[3][0])+","+ str(self.combined_data[3][1])+","+ str(self.combined_data[3][2])+","+ str(self.combined_data[3][3])+"/")
+        with open('config.json', 'w') as json_file:
+            json.dump(self.combined_data, json_file)
         #strg = "*" + ','.join(map(str, self.combined_data[2])) + ',' + ','.join(map(str, self.combined_data[3])) + "/"
-        self.communication.send_command(strg)
-        #print(str)
+        self.communication.send_command(self.strg)
 
     def imu_data_thread(self):
         while not self.stop_threads:
@@ -81,9 +75,6 @@ class ROVController:
         try:
             motion_thread.start()
             #imu_thread.start()
-
-            while True:
-                pass  # Add any main thread logic if needed
 
         except KeyboardInterrupt:
             self.stop_threads = True

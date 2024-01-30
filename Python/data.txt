@@ -1,1 +1,1 @@
-/dev/ttyS5
+COM7

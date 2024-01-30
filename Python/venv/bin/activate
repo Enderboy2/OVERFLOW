@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/youssef/Documents/projects/overflow/finalRovCode2023/ROV/venv"
+VIRTUAL_ENV="/home/youssef/Documents/OVERFLOW/Python/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

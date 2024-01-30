@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/youssef/Documents/projects/overflow/finalRovCode2023/ROV/venv"
+set -gx VIRTUAL_ENV "/home/youssef/Documents/OVERFLOW/Python/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

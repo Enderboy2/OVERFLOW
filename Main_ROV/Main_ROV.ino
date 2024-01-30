@@ -42,6 +42,7 @@ class ROV {
 
   public:
     ROV() : mpu6050(Wire) {}
+
     void receive_data() {
       int byteReceived;
       int byteSend;
@@ -70,21 +71,21 @@ class ROV {
               break;
             }
           }
-          
-         for(int i = 0;i<=10;i++){
-            if(i <=5){
+
+          for (int i = 0; i <= 10; i++) {
+            if (i <= 5) {
               this->motorSpeeds[i] = values[i];
-              }else{
+            } else {
               this->gripperStatuses[i];
-              }
+            }
           }
-          
-         Serial.println(values[8]); //print certain value
-         
-          command = "";
-          
+
+          Serial.println(this->command); //print certain value
+
+          this->command = "";
+
         } else {
-          command += c;
+          this->command += c;
         }
 
       }
@@ -140,25 +141,27 @@ class ROV {
       digitalWrite(grip3_pin, 0);
       digitalWrite(grip4_pin, 0);
     }
-    
+
     void adjust_motors() {
-      motor_1.writeMicroseconds(1500+motorSpeeds[0]);
-      motor_2.writeMicroseconds(1500+motorSpeeds[1]);
-      motor_3.writeMicroseconds(1500+motorSpeeds[2]);
-      motor_4.writeMicroseconds(1500+motorSpeeds[3]);
-      motor_5.writeMicroseconds(1500+motorSpeeds[4]);
-      motor_6.writeMicroseconds(1500+motorSpeeds[5]);
+      motor_1.writeMicroseconds(1500 + motorSpeeds[0]);
+      motor_2.writeMicroseconds(1500 + motorSpeeds[1]);
+      motor_3.writeMicroseconds(1500 + motorSpeeds[2]);
+      motor_4.writeMicroseconds(1500 + motorSpeeds[3]);
+      motor_5.writeMicroseconds(1500 + motorSpeeds[4]);
+      motor_6.writeMicroseconds(1500 + motorSpeeds[5]);
     }
-    
+
     void adjust_grippers() {
-      for (int i = 0; i < 5; i++)
-        if (this->gripperStatuses[i] == 0) {
-          this->gripperBools[i] = LOW;
-        } else {
-          this->gripperBools[i] = HIGH;
-        }
+      Serial.print(this->gripperStatuses[0]);
+      Serial.print(this->gripperStatuses[1]);
+      Serial.print(this->gripperStatuses[2]);
+      Serial.println(this->gripperStatuses[3]);
+      digitalWrite( 2, this->gripperStatuses[0] );
+      digitalWrite( 4, this->gripperStatuses[1] );
+      digitalWrite( 12, 1 );
+      digitalWrite( 13, this->gripperStatuses[3] );
     }
-    
+
     void send_imu_data() {
       this->getImuData();
       //serial.print(this->imuData[0])
@@ -182,8 +185,8 @@ class ROV {
 
       while (true) {
         this->receive_data();
-        //this->adjust_motors();
-        //this->adjust_grippers();
+        this->adjust_motors();
+        this->adjust_grippers();
         //this->send_imu_data();
       }
     }
