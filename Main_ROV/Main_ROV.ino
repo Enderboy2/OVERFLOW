@@ -53,7 +53,6 @@ class ROV {
         byteReceived = RS485Serial.read();
         c = static_cast<char>(byteReceived);
         if (c == '/') {
-          Serial.println("whole command -> " + this->command);
           this->command = this->command.substring(1);
           int index = 0;
           while (this->command.length() > 0) {
@@ -72,16 +71,18 @@ class ROV {
             }
           }
 
-          for (int i = 0; i <= 10; i++) {
+          for (int i = 0; i <= 5; i++) {
             if (i <= 5) {
               this->motorSpeeds[i] = values[i];
             } else {
-              this->gripperStatuses[i];
+              this->gripperStatuses[i] = values[i];
             }
           }
-
-          Serial.println(this->command); //print certain value
-
+          
+          this->gripperStatuses[0] = values[6];
+          this->gripperStatuses[1] = values[7];
+          this->gripperStatuses[2] = values[8];
+          this->gripperStatuses[3] = values[9];
           this->command = "";
 
         } else {
@@ -136,10 +137,10 @@ class ROV {
       motor_5.writeMicroseconds(1500);
       motor_6.writeMicroseconds(1500);
 
-      digitalWrite(grip1_pin, 0);
-      digitalWrite(grip2_pin, 0);
-      digitalWrite(grip3_pin, 0);
-      digitalWrite(grip4_pin, 0);
+      pinMode(grip1_pin, OUTPUT);
+      pinMode(grip2_pin, OUTPUT);
+      pinMode(grip3_pin, OUTPUT);
+      pinMode(grip4_pin, OUTPUT);
     }
 
     void adjust_motors() {
@@ -152,14 +153,45 @@ class ROV {
     }
 
     void adjust_grippers() {
-      Serial.print(this->gripperStatuses[0]);
-      Serial.print(this->gripperStatuses[1]);
-      Serial.print(this->gripperStatuses[2]);
-      Serial.println(this->gripperStatuses[3]);
-      digitalWrite( 2, this->gripperStatuses[0] );
-      digitalWrite( 4, this->gripperStatuses[1] );
-      digitalWrite( 12, 1 );
-      digitalWrite( 13, this->gripperStatuses[3] );
+      //      for (int i = 0; i < 5; i++) {
+      //        if (this->gripperStatuses[i] == 0) {
+      //          this->gripperBools[i] = LOW;
+      //        } else if (this->gripperStatuses[i] == 1) {
+      //          this->gripperBools[i] = HIGH ;
+      //        }
+      //      }
+      //
+      //      digitalWrite( 2, this->gripperBools[0] );
+      //      digitalWrite( 4, this->gripperBools[1] );
+      //      digitalWrite( 12, this->gripperBools[2] );
+      //      digitalWrite( 13, this->gripperBools[3] );
+      if (this->gripperStatuses[0] == 0) {
+        digitalWrite( 2, LOW );
+      }
+      else if (this->gripperStatuses[0] == 1) {
+        digitalWrite( 2, HIGH );
+      }
+
+      if (this->gripperStatuses[1] == 0) {
+        digitalWrite( 4, LOW );
+      }
+      else if (this->gripperStatuses[1] == 1) {
+        digitalWrite( 4, HIGH );
+      }
+
+      if (this->gripperStatuses[2] == 0) {
+        digitalWrite( 12, LOW );
+      }
+      else if (this->gripperStatuses[2] == 1) {
+        digitalWrite( 12, HIGH );
+      }
+
+      if (this->gripperStatuses[3] == 0) {
+        digitalWrite( 13, LOW );
+      }
+      else if (this->gripperStatuses[3] == 1) {
+        digitalWrite( 13, HIGH );
+      }
     }
 
     void send_imu_data() {
@@ -178,7 +210,6 @@ class ROV {
       //serial.print(this->imuData[11])
       //serial.println(this->imuData[12])
       Serial.write("data of imu");
-      Serial.println("data of imu");
     }
 
     void operate() {

@@ -45,7 +45,7 @@ class CameraController:
     def update_image(self):
         success, current_cam = self.cam.read()
         dim = (width, height)
-        full_frame = cv2.resize(current_cam, dim, interpolation=cv2.INTER_AREA)
+        full_frame = current_cam
         img = Image.fromarray(cv2.cvtColor(full_frame, cv2.COLOR_BGR2RGB))
         img_tk = ImageTk.PhotoImage(image=img)
         self.canvas.img_tk = img_tk  # Save reference to avoid garbage collection
@@ -74,6 +74,7 @@ class CameraController:
             screenshot_path = f"screenshot_{self.cam_no}.png"
             cv2.imwrite(screenshot_path, current_cam)
             print(f"Screenshot saved to {screenshot_path}")
+            
 
     def on_close(self):
         self.cam.release()
