@@ -50,7 +50,7 @@ class ROVController:
                 #print(str(self.combined_data[2][0]))
                 if(self.strg != self.prev_strg):
                     self.write_and_print()
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def write_and_print(self):
         # Write combined data to a text file

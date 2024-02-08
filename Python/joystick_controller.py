@@ -40,10 +40,10 @@ class JoystickController:
                 (axis_values[3] * -1) + 1
             ) * 200  # Reverse -> Positive -> Perceentage
             speed = int(abs(max_axis) * full_speed)
-            graduated_speed = speed // 10 * 10
+            graduated_speed = (full_speed // 25 * 25) - 50
             # Calculate the speed based on the max axis value
             if self.prev_motion[3] == "U" or self.prev_motion[3] == "D":
-                return int(full_speed) // 10 * 10
+                return int(full_speed) // 25 * 25
             return graduated_speed
         else:
             return 0
@@ -64,12 +64,12 @@ class JoystickController:
         motion = ""
 
         total_spd = [
-            round(forward_backward) + (round(-left_right)) + (round(-rotation)),
-            up_down * speed,
-            round(-forward_backward) + (round(-left_right)) + (round(rotation)),
+            round(forward_backward) + (round(left_right)) + (round(rotation)),
+            -(up_down * speed),
             round(-forward_backward) + (round(left_right)) + (round(-rotation)),
-            up_down * speed,
-            round(forward_backward) + round((left_right)) + (round(rotation)),
+            round(-forward_backward) + (round(-left_right)) + (round(rotation)),
+            -(up_down * speed),
+            round(forward_backward) + round((-left_right)) + (round(-rotation)),
         ]
 
         min_val = -400
