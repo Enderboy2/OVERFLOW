@@ -28,16 +28,16 @@ class ROV {
     byte gripperBools[5];
     int imuData[9];
     MPU6050 mpu6050;
-    int m1_pin = 3;
+    int m1_pin = 9;
     int m2_pin = 5;
-    int m3_pin = 6;
-    int m4_pin = 9;
-    int m5_pin = 10;
-    int m6_pin = 11;
+    int m3_pin = 10;
+    int m4_pin = 11;
+    int m5_pin = 3;
+    int m6_pin = 6;
     int grip1_pin =  2;
     int grip2_pin =  4;
     int grip3_pin = 12;
-    int grip4_pin = 13;
+    int grip4_pin = A1;
 
 
   public:
@@ -49,8 +49,8 @@ class ROV {
       char c;
       int values[11];
 
-      if (RS485Serial.available()) {
-        byteReceived = RS485Serial.read();
+      if (Serial.available()) {
+        byteReceived = Serial.read();
         c = static_cast<char>(byteReceived);
         if (c == '/') {
           this->command = this->command.substring(1);
@@ -164,7 +164,7 @@ class ROV {
       //      digitalWrite( 2, this->gripperBools[0] );
       //      digitalWrite( 4, this->gripperBools[1] );
       //      digitalWrite( 12, this->gripperBools[2] );
-      //      digitalWrite( 13, this->gripperBools[3] );
+      //      digitalWrite( A1, this->gripperBools[3] );
       if (this->gripperStatuses[0] == 0) {
         digitalWrite( 2, LOW );
       }
@@ -187,10 +187,10 @@ class ROV {
       }
 
       if (this->gripperStatuses[3] == 0) {
-        digitalWrite( 13, LOW );
+        analogWrite( A1, 0 );
       }
       else if (this->gripperStatuses[3] == 1) {
-        digitalWrite( 13, HIGH );
+        analogWrite( A1, 255 );
       }
     }
 

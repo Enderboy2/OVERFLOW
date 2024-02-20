@@ -15,6 +15,8 @@ class GUI:
         self.root.minsize(500, 400)  # Set a minimum size
         self.stop = True
         self.c = 0
+        self.auto_status = False
+        self.image_status = False
         # Styles
         bg_color = "#35424a"
         label_color = "#FFFFFF"
@@ -72,6 +74,53 @@ class GUI:
         self.imu_label = tk.Label(self.root, text="IMU Data:", font=font_style, fg=label_color, bg=bg_color)
         self.imu_label.grid(row=7, column=0, pady=5, padx=10, sticky="w")
 
+        # Buttons
+        self.auto_button = tk.Button(self.root, text="Start Auto", command=self.start_auto, font=font_style, fg=label_color, bg="#5C8374")
+        self.auto_button.grid(row=7, column=1, pady=5, padx=10, sticky="w")
+
+        self.image_button = tk.Button(self.root, text="Start Image", command=self.start_image, font=font_style, fg=label_color, bg="#5C8374")
+        self.image_button.grid(row=7, column=2, pady=5, padx=10, sticky="w")
+
+    def start_auto(self):
+        if not self.auto_status:
+            try:
+                self.auto = subprocess.Popen(["python", "./image/auto.py",])
+                print("image started")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to start auto: {e}")
+            self.auto_status = True
+            self.auto_button.config(text="Stop Auto")
+        else:
+            self.auto.terminate()
+            time.sleep(2)  # Wait for 2 seconds to give the process time to terminate
+            if self.auto.poll() is None:  # If .poll() returns None, the process is still running
+                print("auto did not terminate, killing it.")
+                self.auto.kill()
+            else:
+                print("auto terminated gracefully.")
+            self.auto_status = False
+            self.image_button.config(text="Start Auto")
+
+    def start_image(self):
+        if not self.image_status:
+            try:
+                self.image = subprocess.Popen(["python", "./image/image.py",])
+                print("image started")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to start image: {e}")
+            self.image_status = True
+            self.image_button.config(text="Stop Image")
+        else:
+            self.image.terminate()
+            time.sleep(2)  # Wait for 2 seconds to give the process time to terminate
+            if self.image.poll() is None:  # If .poll() returns None, the process is still running
+                print("image did not terminate, killing it.")
+                self.image.kill()
+            else:
+                print("image terminated gracefully.")
+            self.image_status = False
+            self.image_button.config(text="Start Image")
+
     def get_available_ports(self):
         # Get a list of available ports
         ports = [port.device for port in serial.tools.list_ports.comports()]
@@ -87,7 +136,7 @@ class GUI:
         with open("data.txt", "w") as file:
                 file.write(f"{selected_port}\n")
         try:
-            subprocess.Popen(["python", "main.py", selected_port])
+            self.main = subprocess.Popen(["python", "main.py", selected_port])
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
             self.restart_button.config(state=tk.NORMAL)
@@ -112,6 +161,15 @@ class GUI:
         
         self.stop = True  # Set self.stop to True when stopping the ROV
         self.c += 1
+        
+        self.main.terminate()
+        time.sleep(2)  # Wait for 2 seconds to give the process time to terminate
+        if self.main.poll() is None:  # If .poll() returns None, the process is still running
+            print("main did not terminate, killing it.")
+            self.main.kill()
+        else:
+            print("main terminated gracefully.")
+
         os.system('cls' if os.name == 'nt' else 'clear')  # clear the terminal
         os.system('cls')
         print("Just stopped/restarted for the", self.c, "th time ;)")
