@@ -115,6 +115,12 @@ class JoystickController:
         max_value = 400
         total_spd = [sorted([min_val, i * speed, max_value])[1] for i in total_spd]
 
+        if motion[0] == "F":
+            total_spd[0] += 20
+            total_spd[2] -= 80
+            total_spd[3] -= 100
+            total_spd[5] += 100
+
         return motion, speed, total_spd
 
     def detect_changed_motion(
