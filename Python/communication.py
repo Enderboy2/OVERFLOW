@@ -8,7 +8,6 @@ class Communication:
         self.port = self.read()[0].strip()
         # Initialize communication components only if the port is not empty
         if self.port:
-
             try:
                 self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)
             except:

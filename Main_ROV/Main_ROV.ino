@@ -28,12 +28,12 @@ class ROV {
     byte gripperBools[5];
     int imuData[9];
     MPU6050 mpu6050;
-    int m1_pin = 9;
-    int m2_pin = 5;
-    int m3_pin = 10;
-    int m4_pin = 11;
-    int m5_pin = 3;
-    int m6_pin = 6;
+    int m1_pin = 6;
+    int m2_pin = 10;
+    int m3_pin = 11;
+    int m4_pin = 3;
+    int m5_pin = 9;
+    int m6_pin = 5;
     int grip1_pin =  2;
     int grip2_pin =  4;
     int grip3_pin = 12;
@@ -86,6 +86,7 @@ class ROV {
           this->command = "";
 
         } else {
+          
           this->command += c;
         }
 

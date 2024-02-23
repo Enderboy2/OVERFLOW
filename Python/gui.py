@@ -85,7 +85,7 @@ class GUI:
         if not self.auto_status:
             try:
                 self.auto = subprocess.Popen(["python", "./image/auto.py",])
-                print("image started")
+                print("auto started")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to start auto: {e}")
             self.auto_status = True
@@ -99,7 +99,7 @@ class GUI:
             else:
                 print("auto terminated gracefully.")
             self.auto_status = False
-            self.image_button.config(text="Start Auto")
+            self.auto_button.config(text="Start Auto")
 
     def start_image(self):
         if not self.image_status:

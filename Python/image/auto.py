@@ -44,7 +44,7 @@ def click_and_select_color(event, x, y, flags, param):
 def nothing(x):
     pass
 
-cam_no = 4
+cam_no = 3
 cap = create_camera(str(cam_no))
 
 cv2.namedWindow("Frame")

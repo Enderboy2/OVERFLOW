@@ -62,21 +62,7 @@ class JoystickController:
         )  # Adjust the axis used for speed calculation
 
         motion = ""
-
-        total_spd = [
-            round(forward_backward) + (round(left_right)) + (round(rotation)),
-            -(up_down * speed),
-            round(-forward_backward) + (round(left_right)) + (round(-rotation)),
-            round(-forward_backward) + (round(-left_right)) + (round(rotation)),
-            -(up_down * speed),
-            round(forward_backward) + round((-left_right)) + (round(-rotation)),
-        ]
-
-        min_val = -400
-        max_value = 400
-        total_spd = [sorted([min_val, i * speed, max_value])[1] for i in total_spd]
-
-        # print(total_spd)
+                # print(total_spd)
         if abs(forward_backward) > threshold:
             if forward_backward > 0:
                 motion += "B"
@@ -113,6 +99,22 @@ class JoystickController:
             motion += "L"
         else:
             motion += "0"
+
+
+
+        total_spd = [
+            round(forward_backward) + (round(left_right)) + (round(rotation)),
+            -(speed * up_down),
+            round(-forward_backward) + (round(left_right)) + (round(-rotation)),
+            round(-forward_backward) + (round(-left_right)) + (round(rotation)),
+            -(speed * up_down),
+            round(forward_backward) + round((-left_right)) + (round(-rotation)),
+        ]
+
+        min_val = -400
+        max_value = 400
+        total_spd = [sorted([min_val, i * speed, max_value])[1] for i in total_spd]
+
         return motion, speed, total_spd
 
     def detect_changed_motion(
