@@ -25,7 +25,7 @@ class CameraController:
         self.root.geometry(f"{screen_width}x{screen_height}")
         self.test_mode = test_mode
 
-        self.cam_no = 4
+        self.cam_no = 2
         self.cam = self.create_camera(str(self.cam_no))
         self.lock = threading.Lock()
 

@@ -11,7 +11,7 @@ class Communication:
             try:
                 self.arduino = serial.Serial(port=self.port, baudrate=115200, timeout=.1)
             except:
-                print("An exception occurred")
+                print("An exception occurred" + self.port)
         else:
             print("Port is empty. Communication components not initialized.")
 

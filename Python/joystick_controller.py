@@ -40,7 +40,7 @@ class JoystickController:
                 (axis_values[3] * -1) + 1
             ) * 200  # Reverse -> Positive -> Perceentage
             speed = int(abs(max_axis) * full_speed)
-            graduated_speed = (full_speed // 25 * 25) - 50
+            graduated_speed = (full_speed // 25 * 25)
             # Calculate the speed based on the max axis value
             if self.prev_motion[3] == "U" or self.prev_motion[3] == "D":
                 return int(full_speed) // 25 * 25
@@ -57,6 +57,7 @@ class JoystickController:
         forward_backward = axis_values[1]
         rotation = axis_values[2]
         up_down = hat_values[1]
+        roll = hat_values[0]
         speed = self.calculate_speed(
             axis_values
         )  # Adjust the axis used for speed calculation
@@ -115,12 +116,33 @@ class JoystickController:
         max_value = 400
         total_spd = [sorted([min_val, i * speed, max_value])[1] for i in total_spd]
 
-        if motion[0] == "F":
-            total_spd[0] += 20
-            total_spd[2] -= 80
-            total_spd[3] -= 100
-            total_spd[5] += 100
+        if motion[0] == "B":
+            total_spd[0] -= 100
+            total_spd[5] -= 250
+            total_spd[2] += 25
+        elif motion[0] == "F":
+            total_spd[2] -= 40
+            total_spd[3] -= 40
+            total_spd[5] += 30
+        elif motion[1] == "L":
+            total_spd[0] -= 5
+            total_spd[2] -= 1
 
+            total_spd[3] = 0
+            total_spd[5] = 0
+
+        elif motion[1] == "R":
+            total_spd[0] = 0
+            total_spd[2] = 0
+
+            total_spd[3] +=60
+        elif motion[4] == "R":
+            total_spd[1] = speed
+            total_spd[4] = -speed
+        elif motion[4] == "L":
+            total_spd[1] = -speed
+            total_spd[4] = speed
+        total_spd = [sorted([min_val, i, max_value])[1] for i in total_spd]
         return motion, speed, total_spd
 
     def detect_changed_motion(
