@@ -7,7 +7,7 @@ import time
 
 com = Communication()
 
-# 
+# Color range for detection
 lower_red = np.array([0, 100, 100])
 upper_red = np.array([10, 255, 255])
 frameHSV = None
@@ -21,6 +21,7 @@ rtsp_username = "admin"
 rtsp_password = "overflow123"
 
 searching = False
+search_thread = None
 last_known_direction = None
 
 # Define initial trackbar positions
@@ -44,19 +45,21 @@ class ThreadedCamera:
         self.stopped = False
         self.resolution = (int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         print(f"Video resolution: {self.resolution}")
+        self.lock = threading.Lock()
         self.thread = threading.Thread(target=self.update, args=())
         self.thread.daemon = True
         self.thread.start()
 
     def update(self):
         while not self.stopped:
-            if not self.ret:
-                self.stop()
-            else:
-                self.ret, self.frame = self.capture.read()
+            ret, frame = self.capture.read()
+            with self.lock:
+                self.ret = ret
+                self.frame = frame
 
     def read(self):
-        return self.ret, self.frame
+        with self.lock:
+            return self.ret, self.frame
 
     def stop(self):
         self.stopped = True
@@ -96,7 +99,8 @@ def click_and_select_color(event, x, y, flags, param):
         print(f"Desired location: {desired_location}")
 
 def start_searching():
-    searching = True
+    global searching, last_known_direction
+    print("Search thread started")
     search_steps = [
         ("*0,70,0,0,70,0,0,0,0,0/", 2),  # Up for 2 seconds
         ("*70,0,-70,70,0,-70,0,0,0,0/", 2),  # Rotate left for 2 seconds
@@ -106,12 +110,13 @@ def start_searching():
     for command, duration in search_steps:
         if not searching:  # Stop the search if the object is found
             break
+        print(f"Sending command: {command}")
         com.send_command(command)
-        print("true ent 3abet wala eh")
         time.sleep(duration)
 
     searching = False
     last_known_direction = None  # Reset last known direction after search
+    print("Search thread finished")
 
 if __name__ == "__main__":
     test_mode = "-test" in sys.argv
@@ -152,7 +157,6 @@ if __name__ == "__main__":
             cy = y + h // 2
 
             searching = False  # Object found, stop searching
-            print("set to false")
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
             # Example action based on position and desired location
@@ -164,14 +168,13 @@ if __name__ == "__main__":
                 movement_commands = [0,0]
                 if distance > 45:  # Example threshold for considering movement
                     movement_commands[0] = "L" if cx < desired_x - 20 else "R" if cx > desired_x + 20 else "0"
-                    movement_commands[1] = "U" if cy > desired_y + 20 else "D" if cy < desired_y + 20 else "0"
+                    movement_commands[1] = "U" if cy > desired_y + 20 else "D" if cy < desired_y - 20 else "0"
 
                     if movement_commands != prev_mov:
                         print(movement_commands)
                         if movement_commands[0] == "0":
                             if movement_commands[1] == "U":
                                 com.send_command("*0,70,0,0,70,0,0,0,0,0/")
-                                print("up")
                             elif movement_commands[1] == "D":
                                 com.send_command("*0,-70,0,0,-70,0,0,0,0,0/")
                         else:
@@ -183,10 +186,10 @@ if __name__ == "__main__":
 
             last_known_direction = 'left' if cx < resolution[0] // 2 else 'right'
 
-        elif not contours:
-            if not searching:
-                search_thread = threading.Thread(target=start_searching)
-                search_thread.start()
+        elif not contours and not searching:
+            searching = True
+            search_thread = threading.Thread(target=start_searching)
+            search_thread.start()
 
         cv2.imshow("Frame", frame)
         cv2.imshow("Mask", mask)
@@ -197,8 +200,9 @@ if __name__ == "__main__":
         elif key == ord("s"):
             if not searching:
                 print("Starting search...")
-                start_searching()
+                searching = True
+                search_thread = threading.Thread(target=start_searching)
+                search_thread.start()
 
     cap.stop()
     cv2.destroyAllWindows()
-    
