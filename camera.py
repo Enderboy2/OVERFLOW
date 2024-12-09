@@ -1,16 +1,20 @@
 import cv2
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response, jsonify, request
 import requests
 import threading
 from flask_cors import CORS
+import json
+import multiprocessing as mp
 
 app = Flask(__name__)
 CORS(app)
 # Initialize a list of camera indices
-camera_indices = [0, 1]  # Assuming you have two cameras
+camera_indices = [0,1]  # Assuming you have two cameras
+filename = r"C:\main\Programming\overflow\OVERFLOW\gui\static\json\camera_data.json"
 camera_streams = {}
+with open(filename,"r") as file:
+    cam_data = json.load(file)
 JOYSTICK_SERVER_URL = 'http://192.168.137.1:5000/joystick'  # Change this to your joystick server's IP and port
-
 def get_camera_stream(camera_index):
     """Capture camera feed from a specific index and handle errors."""
     cap = cv2.VideoCapture(camera_index)
@@ -31,7 +35,7 @@ def get_camera_stream(camera_index):
             # Resize frame to reduce resolution and improve performance
             frame = cv2.resize(frame, (320, 240))
             # Convert frame to JPEG with reduced quality
-            ret, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 20])  # Set quality to 70
+            ret, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), int(cam_data[str(camera_index)])])
             frame = buffer.tobytes()
 
             # Yield frame in byte format
@@ -54,7 +58,23 @@ def video_feed(camera_index):
     else:
         # Handle case when a camera feed is unavailable
         return "Camera feed is not available", 404
-
+@app.route('/video_feed/<int:camera_index>/quality',methods=["POST","GET"])
+def quality(camera_index):
+    if request.method == "POST":
+        print(request.json)
+        theIndex = request.json.get("index")
+        print(request.json.get("index"))
+        theQuality = request.json.get("quality")
+        print(request.json.get("quality"))
+        with open(filename,"r") as file:
+            global cam_data
+            cam_data = json.load(file)
+        cam_data[theIndex] = int(theQuality)
+        with open(filename,"w") as file:
+            json.dump(cam_data,file)
+        return "hello from inside"
+    else: return "hello from outside"
+        
 
 
 @app.route('/remote_joystick', methods=['GET'])
@@ -73,7 +93,9 @@ def initialize_camera_streams():
         stream = get_camera_stream(index)
         if stream:
             camera_streams[index] = stream
-            threading.Thread(target=stream, daemon=True).start()
+            print(stream)
+            """ threading.Thread(target=stream, daemon=True).start() """
+            func = mp.Process(target=stream)
         else:
             print(f"[INFO] Camera {index} is not available and won't be started.")
 

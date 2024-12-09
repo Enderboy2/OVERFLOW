@@ -1,53 +1,82 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
 import pygame
+import socket
+import json
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS
-
-# Initialize Pygame and joystick
+# Initialize Pygame and Joystick
 pygame.init()
 pygame.joystick.init()
 
-# Maintain a dictionary to store the last known state of buttons
-last_button_state = {}
+joystick = None
+if pygame.joystick.get_count() > 0:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
 
-@app.route('/joystick', methods=['GET'])
-def get_joystick_status(): 
-    status = {}
+THRESHOLD = 0.2  # Define a threshold for axis changes
+
+def get_joystick_data():
+    joystick_data = {
+        'axes': {},
+        'buttons': {},
+        'hat': None
+    }
+
+    if joystick:
+        joystick_data['name'] = joystick.get_name()
+
+        # Get axes data and apply threshold
+        for i in range(joystick.get_numaxes()):
+            axis_value = joystick.get_axis(i)
+            # Round to 2 decimal places to reduce noise
+            joystick_data['axes'][i] = round(axis_value, 2)
+
+        # Get buttons data
+        for i in range(joystick.get_numbuttons()):
+            joystick_data['buttons'][i] = joystick.get_button(i)
+
+        # Get hat data if present
+        if joystick.get_numhats() > 0:
+            joystick_data['hat'] = joystick.get_hat(0)
+
+    return joystick_data
+
+def significant_change(data1, data2):
+    for axis in data1['axes']:
+        if abs(data1['axes'][axis] - data2['axes'][axis]) > THRESHOLD:
+            return True
+    for button in data1['buttons']:
+        if data1['buttons'][button] != data2['buttons'][button]:
+            return True
+    if data1['hat'] != data2['hat']:
+        return True
+    return False
+
+def run_client():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_ip = "192.168.137.47"
+    server_port = 5000
+
     try:
-        if pygame.joystick.get_count() > 0:
-            joystick = pygame.joystick.Joystick(0)
-            joystick.init()
+        client.connect((server_ip, server_port))
+        prev_data = get_joystick_data()
 
-            # Joystick name
-            status['name'] = joystick.get_name()
+        while True:
+            pygame.event.pump()  # Poll for joystick events
+            
+            current_data = get_joystick_data()
+            if significant_change(current_data, prev_data):
+                msg = json.dumps(current_data)
+                client.sendall(msg.encode('utf-8'))
+                print(f"Sent: {msg}")
+                prev_data = current_data
 
-            # Button states with debouncing
-            buttons = [joystick.get_button(i) for i in range(joystick.get_numbuttons())]
+            pygame.time.wait(100)
 
-            print(buttons)
-            status['buttons'] = buttons
+    except (socket.error, ConnectionRefusedError) as e:
+        print(f"Connection error: {e}")
+    finally:
+        client.close()
+        print("Connection to server closed")
 
-            # Axis positions
-            axes = [joystick.get_axis(i) for i in range(joystick.get_numaxes())]
-            status['axes'] = axes
-
-            # Check if the fourth axis is zero and wait for it to change
-            if axes[3] == 0.0:
-                print("Fourth axis is zero. Waiting for movement...")
-                return jsonify(status)  # Skip sending status until values change
-
-            # Check if all axis values are zero and reinitialize if necessary
-            if all(val == 0.0 for val in axes):
-                joystick.quit()  # Quit the joystick to reset
-                joystick.init()   # Reinitialize the joystick
-
-            return jsonify(status)
-        else:
-            return jsonify({'error': 'No joystick found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500                                                                  
-
-if __name__ == '__main__':
-    app.run(host='192.168.137.1', port=5000)
+# Run the client
+if __name__ == "__main__":
+    run_client()
